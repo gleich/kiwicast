@@ -11,11 +11,29 @@
       "title": "Create Branch",
       "subtitle": "",
       "description": "Create a branch file for a specific project",
-      "mode": "view"
+      "mode": "view",
+      "preferences": [
+        {
+          "name": "projectPath",
+          "type": "textfield",
+          "required": true,
+          "title": "Project Path",
+          "description": "Path to your kiwi project"
+        },
+        {
+          "name": "kiwiPath",
+          "type": "textfield",
+          "required": false,
+          "title": "Path to kiwi",
+          "description": "Path to kiwi executable to run",
+          "placeholder": "kiwi stored in PATH"
+        }
+      ]
     }
   ],
   "dependencies": {
-    "@raycast/api": "^1.25.0"
+    "@raycast/api": "^1.25.0",
+    "toml": "^3.0.0"
   },
   "devDependencies": {
     "@types/node": "~16.10.0",

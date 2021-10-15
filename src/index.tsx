@@ -1,10 +1,27 @@
-import { Form, FormValue, ActionPanel, SubmitFormAction, showToast, ToastStyle } from "@raycast/api";
+import { Form, FormValue, ActionPanel, SubmitFormAction, showToast, ToastStyle, preferences } from "@raycast/api";
+import { exec } from "child_process";
+import { read } from "./config";
 
 export default function Command() {
   function handleSubmit(values: Record<string, FormValue>) {
     console.log(values);
     showToast(ToastStyle.Success, "Submitted form", "See logs for submitted values");
   }
+
+  exec(`${preferences.kiwiPath.value ? preferences.kiwiPath.value : "kiwi"} --help`, (error, _stdout, stderr) => {
+    if (error || stderr) {
+      showToast(ToastStyle.Failure, "Failed to run kiwi command");
+      if (error) {
+        console.error(`error: ${error.message}`);
+      } else {
+        console.log(`stderr: ${stderr}`);
+      }
+      return;
+    }
+  });
+
+  const config = read(String(preferences.projectPath.value));
+  const documentTypes = ["Worksheet", "Note", "Assessment", "Paper", "Lab", "Other"];
 
   return (
     <Form
@@ -14,17 +31,23 @@ export default function Command() {
         </ActionPanel>
       }
     >
-      <Form.TextField id="textfield" title="Text field" placeholder="Enter text" />
-      <Form.TextArea id="textarea" title="Text area" placeholder="Enter multi-line text" />
-      <Form.Separator />
-      <Form.DatePicker id="datepicker" title="Date picker" />
-      <Form.Checkbox id="checkbox" title="Checkbox" label="Label right to the checkbox" storeValue />
-      <Form.Dropdown id="dropdown" title="Dropdown">
-        <Form.DropdownItem value="dropdown-item" title="Dropdown item" />
+      <Form.TextField id="name" title="Name" />
+      <Form.Dropdown id="type" title="Type">
+        {documentTypes.map((t) => (
+          <Form.DropdownItem key={t} value={t} title={t} />
+        ))}
       </Form.Dropdown>
-      <Form.TagPicker id="tokeneditor" title="Token editor">
-        <Form.TagPickerItem value="tokeneditor-item" title="Token editor item" />
-      </Form.TagPicker>
+      <Form.Dropdown id="branchTemplate" title="Branch Template">
+        {config.branchTemplates.map((t) => (
+          <Form.DropdownItem key={t} value={t} title={t} />
+        ))}
+      </Form.Dropdown>
+      <Form.Dropdown id="rootTemplate" title="Root Template">
+        {config.rootTemplates.map((t) => (
+          <Form.DropdownItem key={t} value={t} title={t} />
+        ))}
+      </Form.Dropdown>
+      <Form.Checkbox id="latex" label="Use LaTeX" />
     </Form>
   );
 }
