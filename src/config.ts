@@ -15,7 +15,11 @@ export function read(projectPath: string): Configuration {
     const templatesFolder = path.join(projectPath, "templates");
     const values = toml.parse(content);
     return {
-      classNames: values.classes.map((v: { name: string }) => v.name),
+      classNames: values.classes
+        .filter((v: { name: string; active: boolean }) => {
+          return v.active === undefined || v.active;
+        })
+        .map((v: { name: string }) => v.name),
       branchTemplates: fs.readdirSync(path.join(templatesFolder, "branch")),
       rootTemplates: fs.readdirSync(path.join(templatesFolder, "root")),
     };

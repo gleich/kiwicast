@@ -4,21 +4,25 @@ import { read } from "./config";
 
 export default function Command() {
   function handleSubmit(values: Record<string, FormValue>) {
-    console.log(values);
-    showToast(ToastStyle.Success, "Submitted form", "See logs for submitted values");
-  }
-
-  exec(`${preferences.kiwiPath.value ? preferences.kiwiPath.value : "kiwi"} --help`, (error, _stdout, stderr) => {
-    if (error || stderr) {
-      showToast(ToastStyle.Failure, "Failed to run kiwi command");
-      if (error) {
-        console.error(`error: ${error.message}`);
-      } else {
-        console.log(`stderr: ${stderr}`);
+    exec(
+      `cd ${preferences.projectPath.value} && ${
+        preferences.kiwiPath.value ? preferences.kiwiPath.value : "kiwi"
+      } new --branch='${values.branchTemplate}' --class='${values.className}' --format='${
+        values.latex ? "LaTeX" : "Markdown"
+      }' --name='${values.name}' --root='${values.rootTemplate}' --type='${values.type}'`,
+      (error, _stdout, stderr) => {
+        if (error || stderr) {
+          showToast(ToastStyle.Failure, "Failed to run kiwi command");
+          if (error) {
+            console.error(`error: ${error.message}`);
+          } else {
+            console.error(`stderr: ${stderr}`);
+          }
+          return;
+        }
       }
-      return;
-    }
-  });
+    );
+  }
 
   const config = read(String(preferences.projectPath.value));
   const documentTypes = ["Worksheet", "Note", "Assessment", "Paper", "Lab", "Other"];
@@ -32,6 +36,11 @@ export default function Command() {
       }
     >
       <Form.TextField id="name" title="Name" />
+      <Form.Dropdown id="className" title="Class">
+        {config.classNames.map((c) => (
+          <Form.DropdownItem key={c} value={c} title={c} />
+        ))}
+      </Form.Dropdown>
       <Form.Dropdown id="type" title="Type">
         {documentTypes.map((t) => (
           <Form.DropdownItem key={t} value={t} title={t} />
